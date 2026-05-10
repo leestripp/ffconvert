@@ -1,4 +1,4 @@
-# ffConvert v0.5.0
+# ffConvert
 
 A simple, intuitive GTK4-based video converter for Linux, powered by the robust FFmpeg libraries.
 
