@@ -1,0 +1,7 @@
+# git
+
+.codemax/
+build/
+secrets/
+
+prompt.txt

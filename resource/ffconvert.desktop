@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.1
+Type=Application
+Name=ffconvert
+Comment=Video converter
+Icon=ffconvert.svg
+Exec=ffconvert
+Categories=AudioVideo;Utility;
