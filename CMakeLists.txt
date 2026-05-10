@@ -15,6 +15,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Use PkgConfig to find our libraries, which is the standard on Linux.
 find_package(PkgConfig REQUIRED)
 
+# Static analysis with cppcheck
+find_program(CPPCHECK cppcheck)
+if(CPPCHECK)
+    set(CMAKE_CXX_CPPCHECK
+        ${CPPCHECK}
+        "--suppress=missingInclude"
+        "--suppress=cstyleCast"
+        "--suppress=useStlAlgorithm"
+        "--suppress=unusedFunction"
+    )
+endif()
+
 # Find GTKmm 4
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0)
 
@@ -47,6 +59,9 @@ target_link_libraries(${PROJECT_NAME}
 
 # Set include directories for our own project headers
 target_include_directories(${PROJECT_NAME} PRIVATE src)
+
+# Unit tests
+add_subdirectory(tests)
 
 # install
 install(FILES resource/ffconvert.desktop DESTINATION share/applications)
