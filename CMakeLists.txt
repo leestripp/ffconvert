@@ -69,6 +69,6 @@ add_subdirectory(tests)
 
 # install
 install(FILES resource/ffconvert.desktop DESTINATION share/applications COMPONENT ffconvert)
-install(FILES icon/ffconvert.svg DESTINATION share/icons/hicolor/scalable/apps COMPONENT ffconvert)
-install(FILES icon/ffconvert.svg DESTINATION share/icons COMPONENT ffconvert)
+install(FILES icon/ffconvert.png DESTINATION share/icons/hicolor/1024x1024/apps COMPONENT ffconvert RENAME ffconvert.png)
+install(FILES icon/ffconvert.png DESTINATION share/icons COMPONENT ffconvert RENAME ffconvert.png)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ffconvert)
