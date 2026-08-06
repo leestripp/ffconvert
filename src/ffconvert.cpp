@@ -47,6 +47,7 @@ struct StreamContext {
     AVStream* in_stream = nullptr;
     AVStream* out_stream = nullptr;
     int64_t next_pts = 0; // For tracking audio PTS after FIFO
+    int64_t next_video_pts = 0; // Monotonic PTS counter for output video frames
 };
 
 // Main context for the entire conversion process
@@ -356,9 +357,14 @@ bool transcode_frame(ConversionContext& ctx, AVFrame* frame, StreamContext* s_ct
         sws_scale(ctx.sws_ctx, (const uint8_t* const*)frame->data, frame->linesize, 0,
                   s_ctx->dec_ctx->height, scaled_frame->data, scaled_frame->linesize);
 
-        // **FIX**: Rescale the PTS from the input stream's time base to the encoder's time base.
-        // This is the key to fixing the video frame rate.
-        scaled_frame->pts = av_rescale_q(frame->pts, s_ctx->in_stream->time_base, s_ctx->enc_ctx->time_base);
+        // Generate a strictly monotonic PTS (0, 1, 2, ...) in the encoder's time
+        // base instead of rescaling the source timestamp. WMV/ASF sources in
+        // particular have millisecond-granular, jittery timestamps (dropped
+        // frames in tape captures); rescaling those into the coarse 1/fps
+        // encoder time base yields duplicate or backward PTS values, which the
+        // MP4/MOV muxers reject with EINVAL ("Invalid argument"), aborting the
+        // conversion.
+        scaled_frame->pts = s_ctx->next_video_pts++;
         return encode_and_write(ctx, scaled_frame.get(), s_ctx);
 
     } else if (s_ctx->enc_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
