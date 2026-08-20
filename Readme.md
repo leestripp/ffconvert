@@ -59,6 +59,44 @@ This installs the binary to `~/.local/bin`, the desktop entry to
 `~/.local/share/applications`, and the application icon into the hicolor icon
 theme. Make sure `~/.local/bin` is on your `PATH`.
 
+## Packaging (Debian/Ubuntu `.deb`)
+
+ffConvert can build a system-wide Debian/Ubuntu package with
+[CPack](https://cmake.org/cmake/help/latest/module/CPack.html) (the packaging
+config lives at the bottom of `CMakeLists.txt`). This is separate from the
+`~/.local` developer install above: the `.deb` installs into `/usr` so it
+integrates with the desktop environment for all users.
+
+```bash
+cmake -S . -B build
+cmake --build build -j"$(nproc)"
+cmake --build build --target deb        # or: --target package
+```
+
+The finished package is written to `packages/deb/`, e.g.
+`packages/deb/ffconvert_1.0.0_amd64.deb`. It contains the binary
+(`/usr/bin/ffconvert`), the desktop entry
+(`/usr/share/applications/ffconvert.desktop`), and the application icon in the
+hicolor theme. Runtime dependencies (`Depends:`) are computed automatically
+with `dpkg-shlibdeps`, so the correct versioned FFmpeg/GTKmm library packages
+are required at install time.
+
+The package version comes from `project(ffconvert VERSION ...)` in
+`CMakeLists.txt` — bump it there to version a release.
+
+Install and inspect with:
+
+```bash
+sudo dpkg -i packages/deb/ffconvert_1.0.0_amd64.deb
+sudo apt-get install -f        # resolve any missing dependencies
+
+dpkg-deb --info     packages/deb/ffconvert_1.0.0_amd64.deb
+dpkg-deb --contents packages/deb/ffconvert_1.0.0_amd64.deb
+```
+
+Built `*.deb` files are build artifacts and are excluded from git via
+`.gitignore`. See `packages/deb/README.md` for more detail.
+
 ## Usage
 
 1.  Launch `ffconvert` from your application menu or the command line.

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.28)
 
-project(ffconvert LANGUAGES CXX)
+project(ffconvert VERSION 1.0.0 LANGUAGES CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -70,5 +70,50 @@ add_subdirectory(tests)
 # install
 install(FILES resource/ffconvert.desktop DESTINATION share/applications COMPONENT ffconvert)
 install(FILES icon/ffconvert.png DESTINATION share/icons/hicolor/1024x1024/apps COMPONENT ffconvert RENAME ffconvert.png)
-install(FILES icon/ffconvert.png DESTINATION share/icons COMPONENT ffconvert RENAME ffconvert.png)
 install(TARGETS ${PROJECT_NAME} DESTINATION bin COMPONENT ffconvert)
+
+# =============================================================================
+# Packaging - Debian/Ubuntu .deb via CPack
+#
+#   cmake -S . -B build
+#   cmake --build build -j"$(nproc)"
+#   cmake --build build --target deb        # (or: --target package)
+#
+# The finished .deb is written to:  packages/deb/
+# =============================================================================
+set(CPACK_PACKAGE_NAME                "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR              "Lee Stripp")
+set(CPACK_PACKAGE_CONTACT             "Lee Stripp <leestripp@bigpond.com>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A simple GTK4 video converter powered by FFmpeg")
+set(CPACK_PACKAGE_DESCRIPTION
+    "ffConvert is a straightforward GTKmm 4 application for batch-converting video files.\n Add a folder of videos, choose a modern export format (H.264, H.265/HEVC or Avid\n DNxHR), optionally scale the output, and export. All conversions are performed by\n the FFmpeg libraries. Audio is always re-encoded to AAC.")
+set(CPACK_PACKAGE_HOMEPAGE_URL        "https://gitlab.com/leestripp/ffconvert")
+set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README        "${CMAKE_CURRENT_SOURCE_DIR}/Readme.md")
+
+# A .deb must install system-wide under /usr, independent of the developer's
+# ~/.local CMAKE_INSTALL_PREFIX used for `cmake --install`.
+set(CPACK_PACKAGING_INSTALL_PREFIX    "/usr")
+
+# Debian/Ubuntu (DEB) generator settings.
+set(CPACK_GENERATOR                   "DEB")
+set(CPACK_DEBIAN_PACKAGE_SECTION      "video")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY     "optional")
+# Automatically compute the versioned Depends: (libavcodec6x, libgtkmm-4.0-0t64, ...)
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS    ON)
+# Produce:  ffconvert_<version>_<arch>.deb
+set(CPACK_DEBIAN_FILE_NAME            DEB-DEFAULT)
+
+# Drop the finished .deb into ./packages/deb/
+set(CPACK_OUTPUT_FILE_PREFIX          "${CMAKE_CURRENT_SOURCE_DIR}/packages/deb")
+
+include(CPack)
+
+# Convenience target: `make deb` rebuilds the binary, then creates the .deb.
+add_custom_target(deb
+    COMMAND "${CMAKE_CPACK_COMMAND}" --config "${CMAKE_BINARY_DIR}/CPackConfig.cmake"
+    DEPENDS "${PROJECT_NAME}"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    COMMENT "Building Debian package -> ${CMAKE_CURRENT_SOURCE_DIR}/packages/deb/"
+    VERBATIM
+)

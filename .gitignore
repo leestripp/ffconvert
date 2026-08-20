@@ -6,3 +6,10 @@ secrets/
 
 prompt.txt
 .daedalus/
+
+# --- Packaging (CPack) ---
+# Built Debian/Ubuntu packages are artifacts; keep the folder, ignore the .deb
+packages/deb/*.deb
+# CPack staging trees (normally live under build/, which is already ignored)
+_CPack_Packages/
+packages/deb/_CPack_Packages/

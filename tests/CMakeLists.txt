@@ -7,6 +7,10 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/doctest/doctest.git
     GIT_TAG v2.4.12
 )
+# doctest is only needed to BUILD the unit tests - never install it.
+# Without this its headers and CMake package files leak into
+# `cmake --install` (~/.local) and into the CPack .deb.
+set(DOCTEST_NO_INSTALL ON)
 FetchContent_MakeAvailable(doctest)
 
 add_executable(test_ffconvert
